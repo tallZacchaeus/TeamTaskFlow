@@ -182,7 +182,7 @@ export default function Landing() {
                     <li>• Fiyinfoluwa Enis (Developer)</li>
                     <li>• Joseph (Developer)</li>
                   </ul>
-                  <p className="mt-2 text-xs">Use your full name and password: password123</p>
+                  <p className="mt-2 text-xs">Use your full name as username and your assigned password</p>
                 </div>
               </CardContent>
             </Card>
