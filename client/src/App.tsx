@@ -8,6 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import Tasks from "@/pages/tasks";
 import Team from "@/pages/team";
 import Reports from "@/pages/reports";
+import Calendar from "@/pages/calendar";
 import Sidebar from "@/components/layout/sidebar";
 import TopBar from "@/components/layout/top-bar";
 
@@ -20,6 +21,7 @@ function Router() {
         <Switch>
           <Route path="/" component={Dashboard} />
           <Route path="/tasks" component={Tasks} />
+          <Route path="/calendar" component={Calendar} />
           <Route path="/team" component={Team} />
           <Route path="/reports" component={Reports} />
           <Route component={NotFound} />
