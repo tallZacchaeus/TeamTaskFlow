@@ -13,8 +13,21 @@ import { z } from "zod";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
-  // Team Members routes
-  app.get("/api/team-members", async (req, res) => {
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Team Members routes (Admin only for write operations)
+  app.get("/api/team-members", isAuthenticated, async (req, res) => {
     try {
       const members = await storage.getTeamMembers();
       res.json(members);
@@ -23,7 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/team-members", async (req, res) => {
+  app.post("/api/team-members", requireRole(["admin"]), async (req, res) => {
     try {
       const data = insertTeamMemberSchema.parse(req.body);
       const member = await storage.createTeamMember(data);
@@ -37,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/team-members/:id", async (req, res) => {
+  app.put("/api/team-members/:id", requireRole(["admin"]), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const data = insertTeamMemberSchema.partial().parse(req.body);
@@ -58,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/team-members/:id", async (req, res) => {
+  app.delete("/api/team-members/:id", requireRole(["admin"]), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteTeamMember(id);
@@ -74,8 +87,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Categories routes
-  app.get("/api/categories", async (req, res) => {
+  // Categories routes  
+  app.get("/api/categories", isAuthenticated, async (req, res) => {
     try {
       const categories = await storage.getCategories();
       res.json(categories);
@@ -84,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/categories", async (req, res) => {
+  app.post("/api/categories", requireRole(["admin"]), async (req, res) => {
     try {
       const data = insertCategorySchema.parse(req.body);
       const category = await storage.createCategory(data);
@@ -98,8 +111,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Tasks routes
-  app.get("/api/tasks", async (req, res) => {
+  // Tasks routes (read access for all authenticated users)
+  app.get("/api/tasks", isAuthenticated, async (req, res) => {
     try {
       const { status, assigneeId, categoryId } = req.query;
       
@@ -136,7 +149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/tasks", async (req, res) => {
+  app.post("/api/tasks", requireRole(["admin"]), async (req, res) => {
     try {
       const data = insertTaskSchema.parse(req.body);
       const task = await storage.createTask(data);
@@ -150,7 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/tasks/:id", async (req, res) => {
+  app.put("/api/tasks/:id", requireRole(["admin"]), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const data = insertTaskSchema.partial().parse(req.body);
