@@ -114,6 +114,87 @@ export class MemStorage implements IStorage {
       const id = this.currentId.categories++;
       this.categories.set(id, { ...category, id });
     });
+
+    // Create some sample tasks to demonstrate the application
+    const sampleTasks = [
+      {
+        title: "Redesign landing page",
+        description: "Update the main landing page with new branding and improved UX",
+        status: "in_progress",
+        priority: "high",
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        estimatedHours: 20,
+        assigneeId: 4, // Lisa Wang (Designer)
+        categoryId: 3, // Design
+        position: 0
+      },
+      {
+        title: "Implement user authentication",
+        description: "Add login and registration functionality with JWT tokens",
+        status: "todo",
+        priority: "urgent",
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        estimatedHours: 16,
+        assigneeId: 3, // Mike Chen (Developer)
+        categoryId: 2, // Development
+        position: 0
+      },
+      {
+        title: "Social media campaign launch",
+        description: "Coordinate the launch of Q1 social media campaign across all platforms",
+        status: "completed",
+        priority: "medium",
+        dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        estimatedHours: 12,
+        assigneeId: 2, // Sarah Johnson (Marketing Manager)
+        categoryId: 1, // Marketing
+        position: 0
+      },
+      {
+        title: "Set up analytics dashboard",
+        description: "Configure Google Analytics and create custom dashboard for tracking KPIs",
+        status: "todo",
+        priority: "medium",
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+        estimatedHours: 8,
+        assigneeId: 1, // Alex Chen (Team Lead)
+        categoryId: 4, // Analytics
+        position: 1
+      }
+    ];
+
+    sampleTasks.forEach(task => {
+      const id = this.currentId.tasks++;
+      const now = new Date();
+      const newTask: Task = {
+        id,
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        dueDate: task.dueDate,
+        estimatedHours: task.estimatedHours,
+        actualHours: task.status === "completed" ? task.estimatedHours : Math.floor(task.estimatedHours * 0.3),
+        assigneeId: task.assigneeId,
+        categoryId: task.categoryId,
+        createdAt: now,
+        updatedAt: now,
+        position: task.position
+      };
+      this.tasks.set(id, newTask);
+
+      // Create activity for each task
+      const activityId = this.currentId.activities++;
+      const activity: Activity = {
+        id: activityId,
+        type: "created",
+        taskId: id,
+        memberId: task.assigneeId,
+        description: `Task "${task.title}" was created`,
+        createdAt: now
+      };
+      this.activities.set(activityId, activity);
+    });
   }
 
   // Users
