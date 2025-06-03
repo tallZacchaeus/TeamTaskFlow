@@ -23,6 +23,7 @@ import {
 export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
   // Team Members

@@ -16,6 +16,8 @@ export const sessions = pgTable(
 // User table for Replit Auth
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
+  username: varchar("username").unique(),
+  password: varchar("password"),
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
