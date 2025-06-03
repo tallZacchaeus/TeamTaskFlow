@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, Plus, Bell, Menu, Settings, Users, Trash2 } from "lucide-react";
+import { Search, Plus, Bell, Menu, Settings, Users, Trash2, LogOut, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import TaskModal from "@/components/tasks/task-modal";
 import CategoryModal from "@/components/modals/category-modal";
 import TeamMemberModal from "@/components/modals/team-member-modal";
@@ -28,6 +29,7 @@ const navigation = [
 
 export default function TopBar() {
   const [location] = useLocation();
+  const { user, isAdmin } = useAuth();
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -36,6 +38,10 @@ export default function TopBar() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const pageName = pageNames[location] || "Dashboard";
+
+  const handleLogout = () => {
+    window.location.href = "/api/logout";
+  };
 
   return (
     <>
@@ -95,46 +101,72 @@ export default function TopBar() {
           </div>
           
           <div className="flex items-center gap-1 md:gap-3">
-            <Button 
-              onClick={() => setIsTaskModalOpen(true)}
-              className="text-xs md:text-sm"
-              size="sm"
-            >
-              <Plus className="w-4 h-4 md:mr-2" />
-              <span className="hidden md:inline">New Task</span>
-            </Button>
+            {/* Admin-only actions */}
+            {isAdmin && (
+              <>
+                <Button 
+                  onClick={() => setIsTaskModalOpen(true)}
+                  className="text-xs md:text-sm"
+                  size="sm"
+                >
+                  <Plus className="w-4 h-4 md:mr-2" />
+                  <span className="hidden md:inline">New Task</span>
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="text-xs md:text-sm">
+                      <Settings className="w-4 h-4 md:mr-2" />
+                      <span className="hidden md:inline">Manage</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => setIsCategoryModalOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Category
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsTeamModalOpen(true)}>
+                      <Users className="w-4 h-4 mr-2" />
+                      Add Team Member
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => setIsDeleteModalOpen(true)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Clear All Data
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
             
+            {/* User menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs md:text-sm">
-                  <Settings className="w-4 h-4 md:mr-2" />
-                  <span className="hidden md:inline">Manage</span>
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  <span className="hidden md:inline text-xs">
+                    {user?.firstName || user?.email || 'User'}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => setIsCategoryModalOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Category
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsTeamModalOpen(true)}>
-                  <Users className="w-4 h-4 mr-2" />
-                  Add Team Member
-                </DropdownMenuItem>
+                <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                  <div className="font-medium">{user?.firstName || 'User'}</div>
+                  <div className="text-xs">{user?.email}</div>
+                  <div className="text-xs font-medium text-blue-600 capitalize">
+                    {user?.role || 'guest'}
+                  </div>
+                </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => setIsDeleteModalOpen(true)}
-                  className="text-red-600 focus:text-red-600"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All Data
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-4 h-4" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </Button>
           </div>
         </div>
         
