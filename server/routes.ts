@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./databaseStorage";
-import { setupAuth, isAuthenticated, requireRole } from "./replitAuth";
+import { setupAuth, isAuthenticated, requireRole } from "./auth";
 import { 
   insertTeamMemberSchema,
   insertCategorySchema,
@@ -12,19 +12,7 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
-  await setupAuth(app);
-
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  setupAuth(app);
 
   // Team Members routes (Admin only for write operations)
   app.get("/api/team-members", isAuthenticated, async (req, res) => {
@@ -36,7 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/team-members", requireRole(["admin"]), async (req, res) => {
+  app.post("/api/team-members", requireRole(["admin", "super_admin"]), async (req, res) => {
     try {
       const data = insertTeamMemberSchema.parse(req.body);
       const member = await storage.createTeamMember(data);
@@ -97,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/categories", requireRole(["admin"]), async (req, res) => {
+  app.post("/api/categories", requireRole(["admin", "super_admin"]), async (req, res) => {
     try {
       const data = insertCategorySchema.parse(req.body);
       const category = await storage.createCategory(data);

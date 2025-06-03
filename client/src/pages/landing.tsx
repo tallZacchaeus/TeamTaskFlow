@@ -1,10 +1,75 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Users, BarChart3, Clock } from "lucide-react";
+import { CheckCircle, Users, BarChart3, Clock, User, Lock } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Landing() {
-  const handleLogin = () => {
-    window.location.href = "/api/login";
+  const [showLogin, setShowLogin] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const { toast } = useToast();
+
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: { username: string; password: string }) => {
+      return await apiRequest('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid credentials",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const guestMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/auth/guest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      window.location.reload();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Guest Access Failed",
+        description: error.message || "Unable to access as guest",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both username and password",
+        variant: "destructive",
+      });
+      return;
+    }
+    loginMutation.mutate({ username, password });
+  };
+
+  const handleGuestAccess = () => {
+    guestMutation.mutate();
   };
 
   return (
@@ -19,13 +84,99 @@ export default function Landing() {
             Streamline your team's workflow with our comprehensive task management platform. 
             Track progress, manage deadlines, and boost productivity.
           </p>
-          <Button 
-            onClick={handleLogin}
-            size="lg"
-            className="px-8 py-3 text-lg bg-blue-600 hover:bg-blue-700"
-          >
-            Get Started
-          </Button>
+          
+          {!showLogin ? (
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                onClick={() => setShowLogin(true)}
+                size="lg"
+                className="px-8 py-3 text-lg bg-blue-600 hover:bg-blue-700"
+              >
+                <User className="w-5 h-5 mr-2" />
+                Team Member Login
+              </Button>
+              <Button 
+                onClick={handleGuestAccess}
+                variant="outline"
+                size="lg"
+                className="px-8 py-3 text-lg"
+                disabled={guestMutation.isPending}
+              >
+                {guestMutation.isPending ? "Accessing..." : "Continue as Guest"}
+              </Button>
+            </div>
+          ) : (
+            <Card className="max-w-md mx-auto">
+              <CardHeader>
+                <CardTitle className="text-center">Team Member Login</CardTitle>
+                <CardDescription className="text-center">
+                  Enter your team member credentials
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Username</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        id="username"
+                        type="text"
+                        placeholder="Enter your full name"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <Button 
+                      type="submit" 
+                      className="w-full"
+                      disabled={loginMutation.isPending}
+                    >
+                      {loginMutation.isPending ? "Signing In..." : "Sign In"}
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowLogin(false)}
+                      className="w-full"
+                    >
+                      Back
+                    </Button>
+                  </div>
+                </form>
+                
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600">
+                  <strong>Team Members:</strong>
+                  <ul className="mt-1 space-y-1">
+                    <li>• Zacchaeus James (Team Lead)</li>
+                    <li>• Glory Arogundade (UI Designer)</li>
+                    <li>• Fiyinfoluwa Enis (Developer)</li>
+                    <li>• Joseph (Developer)</li>
+                  </ul>
+                  <p className="mt-2 text-xs">Use your full name and password: password123</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Features Grid */}
