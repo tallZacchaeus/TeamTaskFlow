@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./databaseStorage";
+import { setupAuth, isAuthenticated, requireRole } from "./replitAuth";
 import { 
   insertTeamMemberSchema,
   insertCategorySchema,
@@ -10,6 +11,8 @@ import {
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  await setupAuth(app);
   // Team Members routes
   app.get("/api/team-members", async (req, res) => {
     try {

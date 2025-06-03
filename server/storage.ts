@@ -6,7 +6,7 @@ import {
   timeEntries,
   activities,
   type User, 
-  type InsertUser,
+  type UpsertUser,
   type TeamMember,
   type InsertTeamMember,
   type Category,
@@ -22,9 +22,8 @@ import {
 
 export interface IStorage {
   // Users
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
   
   // Team Members
   getTeamMembers(): Promise<TeamMember[]>;
