@@ -258,6 +258,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advanced Analytics Endpoints
+  app.get("/api/analytics/tasks", isAuthenticated, async (req, res) => {
+    try {
+      const analytics = await storage.getTaskAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Task analytics error:", error);
+      res.status(500).json({ message: "Failed to fetch task analytics" });
+    }
+  });
+
+  app.get("/api/analytics/team-performance", isAuthenticated, async (req, res) => {
+    try {
+      const performance = await storage.getTeamPerformance();
+      res.json(performance);
+    } catch (error) {
+      console.error("Team performance error:", error);
+      res.status(500).json({ message: "Failed to fetch team performance" });
+    }
+  });
+
+  app.get("/api/analytics/categories", isAuthenticated, async (req, res) => {
+    try {
+      const analytics = await storage.getCategoryAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Category analytics error:", error);
+      res.status(500).json({ message: "Failed to fetch category analytics" });
+    }
+  });
+
+  app.get("/api/analytics/time-tracking", isAuthenticated, async (req, res) => {
+    try {
+      const analytics = await storage.getTimeAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Time analytics error:", error);
+      res.status(500).json({ message: "Failed to fetch time analytics" });
+    }
+  });
+
+  app.get("/api/analytics/productivity-trends", isAuthenticated, async (req, res) => {
+    try {
+      const trends = await storage.getProductivityTrends();
+      res.json(trends);
+    } catch (error) {
+      console.error("Productivity trends error:", error);
+      res.status(500).json({ message: "Failed to fetch productivity trends" });
+    }
+  });
+
+  app.get("/api/analytics/workload-distribution", isAuthenticated, async (req, res) => {
+    try {
+      const workload = await storage.getWorkloadDistribution();
+      res.json(workload);
+    } catch (error) {
+      console.error("Workload distribution error:", error);
+      res.status(500).json({ message: "Failed to fetch workload distribution" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

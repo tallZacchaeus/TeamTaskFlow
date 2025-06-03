@@ -20,7 +20,7 @@ import {
   type TaskWithDetails,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -248,6 +248,107 @@ export class DatabaseStorage implements IStorage {
     for (const member of defaultMembers) {
       await db.insert(teamMembers).values(member).onConflictDoNothing();
     }
+  }
+
+  // Advanced reporting methods
+  async getTaskAnalytics(): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        t.status,
+        COUNT(*) as count,
+        AVG(EXTRACT(DAY FROM (t.due_date - t.created_at))) as avg_duration_days,
+        COUNT(CASE WHEN t.due_date < NOW() AND t.status != 'completed' THEN 1 END) as overdue_count
+      FROM tasks t
+      GROUP BY t.status
+    `);
+    return result.rows;
+  }
+
+  async getTeamPerformance(): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        tm.name,
+        tm.role,
+        COUNT(t.id) as total_tasks,
+        COUNT(CASE WHEN t.status = 'completed' THEN 1 END) as completed_tasks,
+        COUNT(CASE WHEN t.due_date < NOW() AND t.status != 'completed' THEN 1 END) as overdue_tasks,
+        ROUND(
+          COUNT(CASE WHEN t.status = 'completed' THEN 1 END)::decimal / 
+          NULLIF(COUNT(t.id), 0) * 100, 2
+        ) as completion_rate
+      FROM team_members tm
+      LEFT JOIN tasks t ON tm.id = t.assignee_id
+      GROUP BY tm.id, tm.name, tm.role
+      ORDER BY completion_rate DESC NULLS LAST
+    `);
+    return result.rows;
+  }
+
+  async getCategoryAnalytics(): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        c.name as category_name,
+        c.color,
+        COUNT(t.id) as task_count,
+        COUNT(CASE WHEN t.status = 'completed' THEN 1 END) as completed_count,
+        COUNT(CASE WHEN t.status = 'in_progress' THEN 1 END) as in_progress_count,
+        COUNT(CASE WHEN t.status = 'todo' THEN 1 END) as todo_count,
+        AVG(CASE WHEN t.status = 'completed' THEN EXTRACT(DAY FROM (t.updated_at - t.created_at)) END) as avg_completion_days
+      FROM categories c
+      LEFT JOIN tasks t ON c.id = t.category_id
+      GROUP BY c.id, c.name, c.color
+      ORDER BY task_count DESC
+    `);
+    return result.rows;
+  }
+
+  async getTimeAnalytics(): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        tm.name as team_member,
+        SUM(te.hours) as total_hours,
+        COUNT(DISTINCT te.task_id) as tasks_worked_on,
+        AVG(te.hours) as avg_hours_per_entry,
+        DATE_TRUNC('week', te.date) as week_start
+      FROM time_entries te
+      JOIN team_members tm ON te.team_member_id = tm.id
+      WHERE te.date >= NOW() - INTERVAL '30 days'
+      GROUP BY tm.id, tm.name, DATE_TRUNC('week', te.date)
+      ORDER BY week_start DESC, total_hours DESC
+    `);
+    return result.rows;
+  }
+
+  async getProductivityTrends(): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        DATE_TRUNC('week', t.created_at) as week_start,
+        COUNT(*) as tasks_created,
+        COUNT(CASE WHEN t.status = 'completed' THEN 1 END) as tasks_completed,
+        AVG(CASE WHEN t.status = 'completed' THEN EXTRACT(DAY FROM (t.updated_at - t.created_at)) END) as avg_completion_time
+      FROM tasks t
+      WHERE t.created_at >= NOW() - INTERVAL '12 weeks'
+      GROUP BY DATE_TRUNC('week', t.created_at)
+      ORDER BY week_start DESC
+    `);
+    return result.rows;
+  }
+
+  async getWorkloadDistribution(): Promise<any> {
+    const result = await db.execute(sql`
+      SELECT 
+        tm.name,
+        tm.role,
+        COUNT(CASE WHEN t.status = 'todo' THEN 1 END) as pending_tasks,
+        COUNT(CASE WHEN t.status = 'in_progress' THEN 1 END) as active_tasks,
+        COUNT(CASE WHEN t.priority = 'high' THEN 1 END) as high_priority_tasks,
+        COUNT(CASE WHEN t.due_date < NOW() AND t.status != 'completed' THEN 1 END) as overdue_tasks
+      FROM team_members tm
+      LEFT JOIN tasks t ON tm.id = t.assignee_id
+      GROUP BY tm.id, tm.name, tm.role
+      ORDER BY (pending_tasks + active_tasks) DESC
+    `);
+    return result.rows;
   }
 }
 

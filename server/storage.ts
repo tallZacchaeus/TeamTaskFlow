@@ -60,6 +60,14 @@ export interface IStorage {
   
   // Data management
   clearAllData(): Promise<void>;
+  
+  // Advanced reporting methods
+  getTaskAnalytics(): Promise<any>;
+  getTeamPerformance(): Promise<any>;
+  getCategoryAnalytics(): Promise<any>;
+  getTimeAnalytics(): Promise<any>;
+  getProductivityTrends(): Promise<any>;
+  getWorkloadDistribution(): Promise<any>;
 }
 
 export class MemStorage implements IStorage {
