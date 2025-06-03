@@ -184,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/tasks/:id", async (req, res) => {
+  app.delete("/api/tasks/:id", requireRole(["admin"]), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteTask(id);
@@ -259,8 +259,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Clear all data
-  app.delete("/api/data/clear-all", async (req, res) => {
+  // Clear all data (Admin only)
+  app.delete("/api/data/clear-all", requireRole(["admin"]), async (req, res) => {
     try {
       await storage.clearAllData();
       res.json({ success: true, message: "All data cleared successfully" });
