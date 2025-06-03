@@ -32,9 +32,9 @@ export default function TaskFilters({ filters, onFiltersChange }: TaskFiltersPro
   };
 
   return (
-    <Card className="mb-6">
-      <CardContent className="p-4">
-        <div className="flex flex-wrap items-center gap-4">
+    <Card className="mb-4 md:mb-6">
+      <CardContent className="p-3 md:p-4">
+        <div className="flex flex-col md:flex-row md:flex-wrap items-start md:items-center gap-3 md:gap-4">
           <div className="flex items-center gap-2">
             <Label className="text-sm font-medium text-slate-700">Category:</Label>
             <Select

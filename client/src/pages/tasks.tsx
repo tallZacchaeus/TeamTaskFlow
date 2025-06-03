@@ -14,7 +14,7 @@ export default function Tasks() {
   });
 
   return (
-    <div className="flex-1 overflow-auto p-6">
+    <div className="flex-1 overflow-auto p-4 md:p-6">
       <TaskFilters filters={filters} onFiltersChange={setFilters} />
       <TaskBoard filters={filters} onNewTask={() => setIsModalOpen(true)} />
       <TaskModal 

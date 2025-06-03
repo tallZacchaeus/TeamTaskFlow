@@ -98,11 +98,11 @@ export default function TaskBoard({ filters }: TaskBoardProps) {
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {columns.map((column) => (
-          <div key={column.id} className={`${column.bgColor} rounded-xl p-4`}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-900">{column.title}</h3>
+          <div key={column.id} className={`${column.bgColor} rounded-xl p-3 md:p-4`}>
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h3 className="font-semibold text-slate-900 text-sm md:text-base">{column.title}</h3>
               <Badge className={column.badgeColor}>{column.tasks.length}</Badge>
             </div>
             

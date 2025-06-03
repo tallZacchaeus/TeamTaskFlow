@@ -15,7 +15,9 @@ import TopBar from "@/components/layout/top-bar";
 function Router() {
   return (
     <div className="flex h-screen bg-slate-50">
-      <Sidebar />
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
       <main className="flex-1 flex flex-col overflow-hidden">
         <TopBar />
         <Switch>
