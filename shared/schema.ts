@@ -19,9 +19,14 @@ export const teamMembers = pgTable("team_members", {
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  parentId: integer("parent_id").references(() => categories.id),
+  parentId: integer("parent_id"),
   color: text("color").notNull().default("#3b82f6"),
 });
+
+// Add self-reference after table definition
+export const categoriesRelations = {
+  parent: categories.parentId
+};
 
 export const tasks = pgTable("tasks", {
   id: serial("id").primaryKey(),

@@ -71,12 +71,12 @@ export default function TaskModal({ isOpen, onClose }: TaskModalProps) {
   });
 
   const onSubmit = (data: InsertTask) => {
-    // Convert string dates to proper format and handle "none" values
+    // Convert string dates to proper format
     const formattedData = {
       ...data,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
-      assigneeId: data.assigneeId === "none" ? null : data.assigneeId || null,
-      categoryId: data.categoryId === "none" ? null : data.categoryId || null,
+      assigneeId: data.assigneeId || null,
+      categoryId: data.categoryId || null,
     };
     
     createTaskMutation.mutate(formattedData);
@@ -124,8 +124,8 @@ export default function TaskModal({ isOpen, onClose }: TaskModalProps) {
             <div>
               <Label>Category</Label>
               <Select
-                value={form.watch("categoryId")?.toString() || ""}
-                onValueChange={(value) => form.setValue("categoryId", value ? parseInt(value) : null)}
+                value={form.watch("categoryId")?.toString() || "none"}
+                onValueChange={(value) => form.setValue("categoryId", value === "none" ? null : parseInt(value))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -164,8 +164,8 @@ export default function TaskModal({ isOpen, onClose }: TaskModalProps) {
             <div>
               <Label>Assignee</Label>
               <Select
-                value={form.watch("assigneeId")?.toString() || ""}
-                onValueChange={(value) => form.setValue("assigneeId", value ? parseInt(value) : null)}
+                value={form.watch("assigneeId")?.toString() || "none"}
+                onValueChange={(value) => form.setValue("assigneeId", value === "none" ? null : parseInt(value))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select assignee" />

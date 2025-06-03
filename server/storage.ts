@@ -181,7 +181,7 @@ export class MemStorage implements IStorage {
     const existing = this.categories.get(id);
     if (!existing) return undefined;
 
-    const updated = { ...existing, ...category };
+    const updated: Category = { ...existing, ...category };
     this.categories.set(id, updated);
     return updated;
   }
@@ -210,11 +210,19 @@ export class MemStorage implements IStorage {
     const id = this.currentId.tasks++;
     const now = new Date();
     const newTask: Task = { 
-      ...task, 
       id, 
+      title: task.title,
+      description: task.description || null,
+      status: task.status || "todo",
+      priority: task.priority || "medium",
+      dueDate: task.dueDate || null,
+      estimatedHours: task.estimatedHours || null,
+      actualHours: 0,
+      assigneeId: task.assigneeId || null,
+      categoryId: task.categoryId || null,
       createdAt: now, 
       updatedAt: now,
-      actualHours: 0,
+      position: task.position || 0,
     };
     this.tasks.set(id, newTask);
 
@@ -279,7 +287,12 @@ export class MemStorage implements IStorage {
 
   async createTimeEntry(entry: InsertTimeEntry): Promise<TimeEntry> {
     const id = this.currentId.timeEntries++;
-    const newEntry: TimeEntry = { ...entry, id, date: new Date() };
+    const newEntry: TimeEntry = { 
+      ...entry, 
+      id, 
+      date: new Date(),
+      description: entry.description || null
+    };
     this.timeEntries.set(id, newEntry);
 
     // Update task actual hours
@@ -301,7 +314,14 @@ export class MemStorage implements IStorage {
 
   async createActivity(activity: InsertActivity): Promise<Activity> {
     const id = this.currentId.activities++;
-    const newActivity: Activity = { ...activity, id, createdAt: new Date() };
+    const newActivity: Activity = { 
+      id,
+      type: activity.type,
+      taskId: activity.taskId || null,
+      memberId: activity.memberId || null,
+      description: activity.description,
+      createdAt: new Date()
+    };
     this.activities.set(id, newActivity);
     return newActivity;
   }
