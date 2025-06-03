@@ -306,14 +306,14 @@ export class DatabaseStorage implements IStorage {
     const result = await db.execute(sql`
       SELECT 
         tm.name as team_member,
-        SUM(te.hours) as total_hours,
+        COALESCE(SUM(te.hours), 0) as total_hours,
         COUNT(DISTINCT te.task_id) as tasks_worked_on,
-        AVG(te.hours) as avg_hours_per_entry,
-        DATE_TRUNC('week', te.date) as week_start
-      FROM time_entries te
-      JOIN team_members tm ON te.team_member_id = tm.id
-      WHERE te.date >= NOW() - INTERVAL '30 days'
-      GROUP BY tm.id, tm.name, DATE_TRUNC('week', te.date)
+        COALESCE(AVG(te.hours), 0) as avg_hours_per_entry,
+        DATE_TRUNC('week', COALESCE(te.date, NOW())) as week_start
+      FROM team_members tm
+      LEFT JOIN time_entries te ON te.task_id IN (SELECT id FROM tasks WHERE assignee_id = tm.id)
+      WHERE te.date IS NULL OR te.date >= NOW() - INTERVAL '30 days'
+      GROUP BY tm.id, tm.name, DATE_TRUNC('week', COALESCE(te.date, NOW()))
       ORDER BY week_start DESC, total_hours DESC
     `);
     return result.rows;
@@ -346,7 +346,7 @@ export class DatabaseStorage implements IStorage {
       FROM team_members tm
       LEFT JOIN tasks t ON tm.id = t.assignee_id
       GROUP BY tm.id, tm.name, tm.role
-      ORDER BY (pending_tasks + active_tasks) DESC
+      ORDER BY (COUNT(CASE WHEN t.status = 'todo' THEN 1 END) + COUNT(CASE WHEN t.status = 'in_progress' THEN 1 END)) DESC
     `);
     return result.rows;
   }

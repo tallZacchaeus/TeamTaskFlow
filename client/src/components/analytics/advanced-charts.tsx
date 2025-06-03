@@ -25,7 +25,7 @@ export function TaskAnalyticsChart() {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={taskAnalytics}>
+          <BarChart data={Array.isArray(taskAnalytics) ? taskAnalytics : []}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="status" />
             <YAxis />
@@ -56,7 +56,7 @@ export function TeamPerformanceChart() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {teamPerformance?.map((member: any, index: number) => (
+          {Array.isArray(teamPerformance) ? teamPerformance.map((member: any, index: number) => (
             <div key={member.name} className="space-y-2">
               <div className="flex justify-between items-center">
                 <div>
@@ -74,7 +74,7 @@ export function TeamPerformanceChart() {
                 <span>{member.overdue_tasks || 0} overdue</span>
               </div>
             </div>
-          ))}
+          )) : []}
         </div>
       </CardContent>
     </Card>

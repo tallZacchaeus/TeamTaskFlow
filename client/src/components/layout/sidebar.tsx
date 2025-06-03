@@ -53,7 +53,7 @@ export default function Sidebar() {
             <Users className="w-4 h-4 text-slate-500" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-900">Alex Chen</p>
+            <p className="text-sm font-medium text-slate-900">Zacchaeus James</p>
             <p className="text-xs text-slate-500">Team Lead</p>
           </div>
         </div>
