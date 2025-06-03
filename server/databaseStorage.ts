@@ -227,6 +227,22 @@ export class DatabaseStorage implements IStorage {
     await db.delete(tasks);
     await db.delete(categories);
     await db.delete(teamMembers);
+    
+    // Re-add default team members
+    await this.initializeDefaultTeamMembers();
+  }
+
+  async initializeDefaultTeamMembers(): Promise<void> {
+    const defaultMembers = [
+      { name: "Zacchaeus James", email: "zacchaeus@company.com", role: "Team Lead", avatarUrl: null },
+      { name: "Glory Arogundade", email: "glory@company.com", role: "UI Designer", avatarUrl: null },
+      { name: "Fiyinfoluwa Enis", email: "fiyinfoluwa@company.com", role: "Developer", avatarUrl: null },
+      { name: "Joseph", email: "joseph@company.com", role: "Developer", avatarUrl: null }
+    ];
+
+    for (const member of defaultMembers) {
+      await db.insert(teamMembers).values(member).onConflictDoNothing();
+    }
   }
 }
 

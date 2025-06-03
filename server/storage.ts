@@ -93,10 +93,10 @@ export class MemStorage implements IStorage {
   private initializeDefaultData() {
     // Create default team members
     const defaultMembers = [
-      { name: "Alex Chen", email: "alex@company.com", role: "Team Lead", avatarUrl: null },
-      { name: "Sarah Johnson", email: "sarah@company.com", role: "Marketing Manager", avatarUrl: null },
-      { name: "Mike Chen", email: "mike@company.com", role: "Developer", avatarUrl: null },
-      { name: "Lisa Wang", email: "lisa@company.com", role: "Designer", avatarUrl: null },
+      { name: "Zacchaeus James", email: "zacchaeus@company.com", role: "Team Lead", avatarUrl: null },
+      { name: "Glory Arogundade", email: "glory@company.com", role: "UI Designer", avatarUrl: null },
+      { name: "Fiyinfoluwa Enis", email: "fiyinfoluwa@company.com", role: "Developer", avatarUrl: null },
+      { name: "Joseph", email: "joseph@company.com", role: "Developer", avatarUrl: null },
     ];
 
     defaultMembers.forEach(member => {
@@ -433,4 +433,6 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Import and use DatabaseStorage for authentication support
+import { DatabaseStorage } from './databaseStorage';
+export const storage = new DatabaseStorage();
