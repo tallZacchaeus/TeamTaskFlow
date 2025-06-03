@@ -97,7 +97,7 @@ export default function Reports() {
   );
 
   return (
-    <div className="flex-1 overflow-auto p-6">
+    <div className="flex-1 overflow-auto p-4 md:p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900 mb-2">Reports & Analytics</h1>
         <p className="text-slate-600">Track team performance and project insights</p>
