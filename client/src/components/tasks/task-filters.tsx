@@ -26,7 +26,9 @@ export default function TaskFilters({ filters, onFiltersChange }: TaskFiltersPro
   });
 
   const handleFilterChange = (key: string, value: string) => {
-    onFiltersChange({ ...filters, [key]: value });
+    // Convert "all" back to empty string for filtering logic
+    const filterValue = value === "all" ? "" : value;
+    onFiltersChange({ ...filters, [key]: filterValue });
   };
 
   return (
@@ -43,7 +45,7 @@ export default function TaskFilters({ filters, onFiltersChange }: TaskFiltersPro
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id.toString()}>
                     {category.name}
@@ -63,7 +65,7 @@ export default function TaskFilters({ filters, onFiltersChange }: TaskFiltersPro
                 <SelectValue placeholder="All Members" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Members</SelectItem>
+                <SelectItem value="all">All Members</SelectItem>
                 {teamMembers.map((member) => (
                   <SelectItem key={member.id} value={member.id.toString()}>
                     {member.name}
@@ -83,7 +85,7 @@ export default function TaskFilters({ filters, onFiltersChange }: TaskFiltersPro
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="todo">Todo</SelectItem>
                 <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>

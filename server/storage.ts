@@ -143,7 +143,7 @@ export class MemStorage implements IStorage {
 
   async createTeamMember(member: InsertTeamMember): Promise<TeamMember> {
     const id = this.currentId.teamMembers++;
-    const newMember: TeamMember = { ...member, id };
+    const newMember: TeamMember = { ...member, id, avatarUrl: member.avatarUrl || null };
     this.teamMembers.set(id, newMember);
     return newMember;
   }

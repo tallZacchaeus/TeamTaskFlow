@@ -71,12 +71,12 @@ export default function TaskModal({ isOpen, onClose }: TaskModalProps) {
   });
 
   const onSubmit = (data: InsertTask) => {
-    // Convert string dates to proper format
+    // Convert string dates to proper format and handle "none" values
     const formattedData = {
       ...data,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
-      assigneeId: data.assigneeId || null,
-      categoryId: data.categoryId || null,
+      assigneeId: data.assigneeId === "none" ? null : data.assigneeId || null,
+      categoryId: data.categoryId === "none" ? null : data.categoryId || null,
     };
     
     createTaskMutation.mutate(formattedData);
@@ -131,7 +131,7 @@ export default function TaskModal({ isOpen, onClose }: TaskModalProps) {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No category</SelectItem>
+                  <SelectItem value="none">No category</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id.toString()}>
                       {category.name}
@@ -171,7 +171,7 @@ export default function TaskModal({ isOpen, onClose }: TaskModalProps) {
                   <SelectValue placeholder="Select assignee" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="none">Unassigned</SelectItem>
                   {teamMembers.map((member) => (
                     <SelectItem key={member.id} value={member.id.toString()}>
                       {member.name}
