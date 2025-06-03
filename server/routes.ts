@@ -243,6 +243,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear all data
+  app.delete("/api/data/clear-all", async (req, res) => {
+    try {
+      await storage.clearAllData();
+      res.json({ success: true, message: "All data cleared successfully" });
+    } catch (error) {
+      console.error("Error clearing data:", error);
+      res.status(500).json({ error: "Failed to clear data" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

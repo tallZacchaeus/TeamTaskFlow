@@ -5,6 +5,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Search, Plus, Bell, Menu, Settings, Users, Trash2 } from "lucide-react";
 import TaskModal from "@/components/tasks/task-modal";
+import CategoryModal from "@/components/modals/category-modal";
+import TeamMemberModal from "@/components/modals/team-member-modal";
+import DeleteAllModal from "@/components/modals/delete-all-modal";
 import { useLocation, Link } from "wouter";
 
 const pageNames: Record<string, string> = {

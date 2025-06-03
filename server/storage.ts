@@ -57,6 +57,9 @@ export interface IStorage {
   // Activities
   getActivities(limit?: number): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
+  
+  // Data management
+  clearAllData(): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -405,6 +408,29 @@ export class MemStorage implements IStorage {
     };
     this.activities.set(id, newActivity);
     return newActivity;
+  }
+
+  async clearAllData(): Promise<void> {
+    // Clear all data maps
+    this.users.clear();
+    this.teamMembers.clear();
+    this.categories.clear();
+    this.tasks.clear();
+    this.timeEntries.clear();
+    this.activities.clear();
+    
+    // Reset ID counters
+    this.currentId = {
+      users: 1,
+      teamMembers: 1,
+      categories: 1,
+      tasks: 1,
+      timeEntries: 1,
+      activities: 1,
+    };
+    
+    // Reinitialize with default data if needed
+    this.initializeDefaultData();
   }
 }
 
