@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Search, Plus, Bell, Menu } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Search, Plus, Bell, Menu, Settings, Users, Trash2 } from "lucide-react";
 import TaskModal from "@/components/tasks/task-modal";
 import { useLocation, Link } from "wouter";
 
@@ -27,6 +28,9 @@ export default function TopBar() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const pageName = pageNames[location] || "Dashboard";
 
@@ -87,7 +91,7 @@ export default function TopBar() {
             </div>
           </div>
           
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-1 md:gap-3">
             <Button 
               onClick={() => setIsTaskModalOpen(true)}
               className="text-xs md:text-sm"
@@ -96,6 +100,34 @@ export default function TopBar() {
               <Plus className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">New Task</span>
             </Button>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs md:text-sm">
+                  <Settings className="w-4 h-4 md:mr-2" />
+                  <span className="hidden md:inline">Manage</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => setIsCategoryModalOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Category
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsTeamModalOpen(true)}>
+                  <Users className="w-4 h-4 mr-2" />
+                  Add Team Member
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Clear All Data
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="w-4 h-4" />
               <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -121,6 +153,18 @@ export default function TopBar() {
       <TaskModal 
         isOpen={isTaskModalOpen} 
         onClose={() => setIsTaskModalOpen(false)} 
+      />
+      <CategoryModal 
+        isOpen={isCategoryModalOpen} 
+        onClose={() => setIsCategoryModalOpen(false)} 
+      />
+      <TeamMemberModal 
+        isOpen={isTeamModalOpen} 
+        onClose={() => setIsTeamModalOpen(false)} 
+      />
+      <DeleteAllModal 
+        isOpen={isDeleteModalOpen} 
+        onClose={() => setIsDeleteModalOpen(false)} 
       />
     </>
   );
