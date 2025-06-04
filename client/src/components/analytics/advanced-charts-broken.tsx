@@ -1,11 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useQuery } from "@tanstack/react-query";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
-import { Target, Users, Folder, TrendingUp, Clock, BarChart3 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
+import { TrendingUp, Users, Clock, Target } from "lucide-react";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export function TaskAnalyticsChart() {
   const { data: taskAnalytics, isLoading } = useQuery({
@@ -56,7 +56,7 @@ export function TeamPerformanceChart() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {Array.isArray(teamPerformance) && teamPerformance.map((member: any, index: number) => (
+          {Array.isArray(teamPerformance) ? teamPerformance.map((member: any, index: number) => (
             <div key={member.name} className="space-y-2">
               <div className="flex justify-between items-center">
                 <div>
@@ -74,7 +74,7 @@ export function TeamPerformanceChart() {
                 <span>{member.overdue_tasks || 0} overdue</span>
               </div>
             </div>
-          ))}
+          )) : []}
         </div>
       </CardContent>
     </Card>
@@ -91,10 +91,7 @@ export function CategoryAnalyticsChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Folder className="w-5 h-5" />
-          Category Distribution
-        </CardTitle>
+        <CardTitle>Category Distribution</CardTitle>
         <CardDescription>Task distribution across project categories</CardDescription>
       </CardHeader>
       <CardContent>
@@ -110,9 +107,9 @@ export function CategoryAnalyticsChart() {
               fill="#8884d8"
               dataKey="task_count"
             >
-              {Array.isArray(categoryAnalytics) && categoryAnalytics.map((entry: any, index: number) => (
+              {Array.isArray(categoryAnalytics) ? categoryAnalytics.map((entry: any, index: number) => (
                 <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
-              ))}
+              )) : []}
             </Pie>
             <Tooltip />
           </PieChart>
@@ -123,17 +120,16 @@ export function CategoryAnalyticsChart() {
 }
 
 export function ProductivityTrendsChart() {
-  const { data: productivityTrends, isLoading } = useQuery({
+  const { data: trends, isLoading } = useQuery({
     queryKey: ["/api/analytics/productivity-trends"],
   });
 
   if (isLoading) return <div className="h-64 animate-pulse bg-gray-200 rounded"></div>;
 
-  const chartData = Array.isArray(productivityTrends) ? productivityTrends.map((item: any) => ({
-    week: new Date(item.week_start).toLocaleDateString(),
-    created: item.tasks_created || 0,
-    completed: item.tasks_completed || 0
-  })) : [];
+  const formattedData = trends?.map((item: any) => ({
+    ...item,
+    week: new Date(item.week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }));
 
   return (
     <Card>
@@ -142,17 +138,17 @@ export function ProductivityTrendsChart() {
           <TrendingUp className="w-5 h-5" />
           Productivity Trends
         </CardTitle>
-        <CardDescription>12-week task creation and completion patterns</CardDescription>
+        <CardDescription>Weekly task creation and completion patterns</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
+          <LineChart data={formattedData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="week" />
             <YAxis />
             <Tooltip />
-            <Line type="monotone" dataKey="created" stroke="#8884d8" name="Created" />
-            <Line type="monotone" dataKey="completed" stroke="#82ca9d" name="Completed" />
+            <Line type="monotone" dataKey="tasks_created" stroke="#3b82f6" name="Created" />
+            <Line type="monotone" dataKey="tasks_completed" stroke="#10b981" name="Completed" />
           </LineChart>
         </ResponsiveContainer>
       </CardContent>
@@ -161,24 +157,27 @@ export function ProductivityTrendsChart() {
 }
 
 export function TimeTrackingChart() {
-  const { data: timeAnalytics, isLoading } = useQuery({
+  const { data: timeData, isLoading } = useQuery({
     queryKey: ["/api/analytics/time-tracking"],
   });
 
   if (isLoading) return <div className="h-64 animate-pulse bg-gray-200 rounded"></div>;
 
-  const chartData = Array.isArray(timeAnalytics) ? timeAnalytics.reduce((acc: any[], item: any) => {
-    const existingWeek = acc.find(week => week.week === new Date(item.week_start).toLocaleDateString());
-    if (existingWeek) {
-      existingWeek[item.team_member] = item.total_hours || 0;
+  // Group by team member and sum total hours
+  const aggregatedData = timeData?.reduce((acc: any[], entry: any) => {
+    const existing = acc.find(item => item.team_member === entry.team_member);
+    if (existing) {
+      existing.total_hours += Number(entry.total_hours || 0);
+      existing.tasks_worked_on += Number(entry.tasks_worked_on || 0);
     } else {
       acc.push({
-        week: new Date(item.week_start).toLocaleDateString(),
-        [item.team_member]: item.total_hours || 0
+        team_member: entry.team_member,
+        total_hours: Number(entry.total_hours || 0),
+        tasks_worked_on: Number(entry.tasks_worked_on || 0)
       });
     }
     return acc;
-  }, []) : [];
+  }, []);
 
   return (
     <Card>
@@ -187,17 +186,17 @@ export function TimeTrackingChart() {
           <Clock className="w-5 h-5" />
           Time Tracking Analytics
         </CardTitle>
-        <CardDescription>30-day rolling window of time spent per team member</CardDescription>
+        <CardDescription>Hours logged by team members in the last 30 days</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={chartData}>
+          <BarChart data={aggregatedData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="week" />
+            <XAxis dataKey="team_member" />
             <YAxis />
             <Tooltip />
-            <Area type="monotone" dataKey="total_hours" stackId="1" stroke="#8884d8" fill="#8884d8" />
-          </AreaChart>
+            <Bar dataKey="total_hours" fill="#8b5cf6" />
+          </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
@@ -214,24 +213,25 @@ export function WorkloadDistributionChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5" />
-          Current Workload Distribution
-        </CardTitle>
-        <CardDescription>Current task assignments and priority distribution by team member</CardDescription>
+        <CardTitle>Current Workload Distribution</CardTitle>
+        <CardDescription>Active and pending tasks by team member</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {Array.isArray(workloadData) && workloadData.map((member: any, index: number) => (
+          {workloadData?.map((member: any) => (
             <div key={member.name} className="space-y-2">
               <div className="flex justify-between items-center">
                 <div>
                   <span className="font-medium">{member.name}</span>
                   <Badge variant="outline" className="ml-2">{member.role}</Badge>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {member.pending_tasks || 0} pending, {member.active_tasks || 0} active
-                </span>
+                <div className="flex gap-2 text-sm">
+                  <Badge variant="secondary">{member.pending_tasks || 0} pending</Badge>
+                  <Badge variant="default">{member.active_tasks || 0} active</Badge>
+                  {Number(member.overdue_tasks || 0) > 0 && (
+                    <Badge variant="destructive">{member.overdue_tasks} overdue</Badge>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div className="text-center p-2 bg-yellow-50 rounded">
@@ -243,8 +243,8 @@ export function WorkloadDistributionChart() {
                   <div className="text-muted-foreground">Active</div>
                 </div>
                 <div className="text-center p-2 bg-red-50 rounded">
-                  <div className="font-medium">{member.overdue_tasks || 0}</div>
-                  <div className="text-muted-foreground">Overdue</div>
+                  <div className="font-medium">{member.high_priority_tasks || 0}</div>
+                  <div className="text-muted-foreground">High Priority</div>
                 </div>
               </div>
             </div>
